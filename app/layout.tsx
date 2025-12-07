@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* load AdSense runtime after the page is interactive */}
+        <Script
+          id="adsense-runtime"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5519525788719863"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+        {/* initialize adsbygoogle (runs after the runtime loads) */}
+        <Script id="adsbygoogle-init" strategy="afterInteractive">
+          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+        </Script>
+
         {children}
       </body>
     </html>
