@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { MoveLeft } from "lucide-react";
 import Loader from "@/app/components/Loader";
+import Player from "@/app/components/ArtPlayer";
 import ImageWithLoader from "@/app/components/ImageWithLoader";
 
 type Episode = {
@@ -51,7 +52,9 @@ export default function EpisodePlayerPage() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [seasonLoading, setSeasonLoading] = useState<number | null>(null);
-  const [currentSeason, setCurrentSeason] = useState<number>(Number(seasonParam) || 1);
+  const [currentSeason, setCurrentSeason] = useState<number>(
+    Number(seasonParam) || 1
+  );
 
   // Player state
   const [streamUrl, setStreamUrl] = useState<string | null>(
@@ -60,14 +63,21 @@ export default function EpisodePlayerPage() {
   const [error, setError] = useState<string>("");
 
   // Index of currently-watching episode in the flattened `episodes` array
-  const [currentEpisodeIdx, setCurrentEpisodeIdx] = useState<number | null>(null);
+  const [currentEpisodeIdx, setCurrentEpisodeIdx] = useState<number | null>(
+    null
+  );
 
   // Utility: normalize token or url into a playable URL
   function buildStreamUrl(maybeTokenOrUrl: string | null | undefined) {
     if (!maybeTokenOrUrl) return null;
     const s = String(maybeTokenOrUrl).trim();
     if (!s) return null;
-    if (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/")) return s;
+    if (
+      s.startsWith("http://") ||
+      s.startsWith("https://") ||
+      s.startsWith("/")
+    )
+      return s;
     return `/api/stream?enc=${encodeURIComponent(s)}`;
   }
 
@@ -89,7 +99,11 @@ export default function EpisodePlayerPage() {
       setError("");
       setLoading(true);
 
-      const res = await fetch(`/api/series/${encodeURIComponent(id)}?season=${encodeURIComponent(season)}`);
+      const res = await fetch(
+        `/api/series/${encodeURIComponent(id)}?season=${encodeURIComponent(
+          season
+        )}`
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -140,9 +154,17 @@ export default function EpisodePlayerPage() {
   };
 
   // Token fetch helper
-  const fetchTokenForEpisode = async (season: string, group: string, index: number) => {
+  const fetchTokenForEpisode = async (
+    season: string,
+    group: string,
+    index: number
+  ) => {
     if (!id) throw new Error("Missing show id");
-    const res = await fetch(`/api/series/${encodeURIComponent(id)}/token?season=${encodeURIComponent(season)}&group=${encodeURIComponent(group)}&index=${index}`);
+    const res = await fetch(
+      `/api/series/${encodeURIComponent(id)}/token?season=${encodeURIComponent(
+        season
+      )}&group=${encodeURIComponent(group)}&index=${index}`
+    );
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error ?? "Failed to fetch token");
     if (typeof data === "string") return buildStreamUrl(data);
@@ -151,33 +173,36 @@ export default function EpisodePlayerPage() {
     throw new Error("Unexpected token response");
   };
 
-  // Navigate to player URL (and optimistically highlight the episode)
   const goToPlayer = (group: string, index: number, episodeTitle?: string) => {
-    // find flattened index and set highlight immediately for snappy UI
-    const found = episodes.findIndex((e) => e.group === group && Number(e.idx) === Number(index));
+    const found = episodes.findIndex(
+      (e) => e.group === group && Number(e.idx) === Number(index)
+    );
     if (found !== -1) setCurrentEpisodeIdx(found);
 
     const t = episodeTitle ? `&t=${encodeURIComponent(episodeTitle)}` : "";
     const s = currentSeason ?? Number(seasonParam) ?? 1;
-    router.push(`/series/${id}/episode?season=${s}&group=${encodeURIComponent(group)}&index=${index}${t}`);
+    router.push(
+      `/series/${id}/episode?season=${s}&group=${encodeURIComponent(
+        group
+      )}&index=${index}${t}`
+    );
   };
 
-  // Load show on mount / when seasonParam changes
   useEffect(() => {
     if (!id) return;
     fetchShow(Number(seasonParam) || 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, seasonParam]);
 
-  // When component mounts or query params change: try to fetch token using group/index (if no enc)
   useEffect(() => {
     let mounted = true;
     const tryFetchToken = async () => {
       if (encParam) {
         setStreamUrl(buildStreamUrl(encParam));
-        // if we have enc but also group/index, try to set currentEpisodeIdx from episodes
         if (groupParam && indexParam != null && episodes.length > 0) {
-          const found = episodes.findIndex((e) => e.group === groupParam && Number(e.idx) === Number(indexParam));
+          const found = episodes.findIndex(
+            (e) =>
+              e.group === groupParam && Number(e.idx) === Number(indexParam)
+          );
           if (found !== -1) setCurrentEpisodeIdx(found);
         }
         return;
@@ -192,13 +217,20 @@ export default function EpisodePlayerPage() {
       try {
         setLoading(true);
         setError("");
-        const tokenUrl = await fetchTokenForEpisode(seasonParam, groupParam, Number(indexParam));
+        const tokenUrl = await fetchTokenForEpisode(
+          seasonParam,
+          groupParam,
+          Number(indexParam)
+        );
         if (!mounted) return;
         setStreamUrl(tokenUrl);
 
         // also set the highlight (if episodes already fetched)
         if (episodes.length > 0) {
-          const found = episodes.findIndex((e) => e.group === groupParam && Number(e.idx) === Number(indexParam));
+          const found = episodes.findIndex(
+            (e) =>
+              e.group === groupParam && Number(e.idx) === Number(indexParam)
+          );
           if (found !== -1) setCurrentEpisodeIdx(found);
         }
       } catch (err: any) {
@@ -252,13 +284,15 @@ export default function EpisodePlayerPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-semibold">
-            {titleParam ? decodeURIComponent(titleParam) : show.show_title ?? "Episode Player"}
+            {titleParam
+              ? decodeURIComponent(titleParam)
+              : show.show_title ?? "Episode Player"}
           </h1>
         </div>
 
         <div
           className="absolute top-4 left-4 z-30 bg-gray-900 hover:bg-gray-600 rounded-full p-2 cursor-pointer"
-          onClick={() => router.back()}
+          onClick={() => router.push(`/series/${id}`)}
         >
           <MoveLeft size={32} className="text-white" />
         </div>
@@ -283,24 +317,32 @@ export default function EpisodePlayerPage() {
       <div className="space-y-8 mt-6">
         {Object.entries(show.data ?? {}).map(([seasonName, eps]) => (
           <div key={seasonName}>
-            <h3 className="text-lg font-medium mb-2">Season: {seasonName}</h3>
-            <div className="flex flex-col gap-3">
+            <h3 className="text-lg font-medium mb-2">{seasonName}</h3>
+
+            {/* Horizontal scroll container */}
+            <div className="flex overflow-x-auto gap-4 pb-3 snap-x snap-mandatory scrollbar-hide">
               {Array.isArray(eps) && eps.length > 0 ? (
                 eps.map((ep, idx) => {
-                  // find flattened index of this ep (group=seasonName, idx)
-                  const flatIndex = episodes.findIndex((e) => e.group === seasonName && Number(e.idx) === idx);
-                  const active = flatIndex !== -1 && currentEpisodeIdx === flatIndex;
+                  const flatIndex = episodes.findIndex(
+                    (e) => e.group === seasonName && Number(e.idx) === idx
+                  );
+                  const active =
+                    flatIndex !== -1 && currentEpisodeIdx === flatIndex;
 
                   return (
                     <div
                       key={idx}
-                      className={`rounded-lg p-3 flex flex-col md:flex-row gap-4 cursor-pointer group border ${
-                        active ? "border-indigo-500 bg-indigo-50" : "hover:shadow"
-                      }`}
+                      className={`min-w-[280px] md:min-w-[350px] snap-start 
+              rounded-lg p-3 border cursor-pointer group 
+              ${
+                active
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                  : "hover:scale-105 hover:shadow-lg transition-transform duration-200 ease-in-out"
+              }`}
                       onClick={() => goToPlayer(seasonName, idx, ep.title)}
                     >
                       {ep.image_url ? (
-                        <div className="relative md:w-48 md:h-32 w-full h-60 rounded-md overflow-hidden mb-3 md:mb-0 flex-shrink-0">
+                        <div className="relative w-full h-40 md:w-78 md:h-42 rounded-md overflow-hidden">
                           <ImageWithLoader
                             src={ep.image_url}
                             alt={ep.title}
@@ -308,24 +350,34 @@ export default function EpisodePlayerPage() {
                             className="object-cover"
                             unoptimized
                           />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition duration-200"></div>
                         </div>
                       ) : (
-                        <div className="md:w-48 md:h-32 w-full h-60 bg-gray-100 rounded mb-3 md:mb-0 flex items-center justify-center text-sm text-gray-500">No Image</div>
+                        <div className="w-full h-60 md:w-48 md:h-32 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
+                          No Image
+                        </div>
                       )}
 
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1 mt-2">
+                        <div className="flex items-center justify-between">
                           <h4 className="font-medium">{ep.title}</h4>
-                          {active && <span className="text-xs text-indigo-600">Playing</span>}
+                          {active && (
+                            <span className="text-xs text-indigo-600">
+                              Playing
+                            </span>
+                          )}
                         </div>
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-3">{ep.description}</p>
+
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                          {ep.description}
+                        </p>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="text-gray-500">No episodes available for this season.</div>
+                <div className="text-gray-500">
+                  No episodes available for this season.
+                </div>
               )}
             </div>
           </div>

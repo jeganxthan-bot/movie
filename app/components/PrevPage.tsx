@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import styled from "styled-components";
 
@@ -6,13 +8,16 @@ interface Props {
   disabled?: boolean;
 }
 
-const PrevPage = ({ onClick, disabled }: Props) => {
+const PrevPage = ({ onClick, disabled = false }: Props) => {
   return (
     <StyledWrapper>
       <button
         className={`submit ${disabled ? "disabled" : ""}`}
         onClick={disabled ? undefined : onClick}
         disabled={disabled}
+        aria-disabled={disabled}
+        data-label="prev"
+        type="button"
       >
         prev
       </button>
@@ -54,9 +59,10 @@ const StyledWrapper = styled.div`
     background: rgba(70, 70, 70, 0.4);
   }
 
-  .submit:after,
-  .submit:before {
-    content: "next";
+  /* Use attr(data-label) so pseudo content is read from DOM and cannot mismatch */
+  .submit::after,
+  .submit::before {
+    content: attr(data-label);
     width: 100%;
     height: 100%;
     position: absolute;
@@ -68,27 +74,28 @@ const StyledWrapper = styled.div`
     color: transparent;
     font-size: 0.8vw;
     text-transform: uppercase;
+    /* reduced letter-spacing so initial render is stable */
     letter-spacing: 5.2vw;
     transition: 0.5s;
   }
 
-  .submit:after {
+  .submit::after {
     text-shadow: 1.8vw 1.8vw 1.2vw white;
   }
 
-  .submit:before {
+  .submit::before {
     text-shadow: 1.8vw -2vw 1.2vw white;
     transition: 0.8s;
   }
 
-  .submit:hover:not(.disabled):after,
-  .submit:focus:not(.disabled):after {
+  .submit:hover:not(.disabled)::after,
+  .submit:focus:not(.disabled)::after {
     letter-spacing: 0.28vw;
     text-shadow: 0.08vw 0vw 0 white;
   }
 
-  .submit:hover:not(.disabled):before,
-  .submit:focus:not(.disabled):before {
+  .submit:hover:not(.disabled)::before,
+  .submit:focus:not(.disabled)::before {
     letter-spacing: 0.28vw;
     text-shadow: 0.08vw 0vw 0.08vw white;
   }
@@ -106,6 +113,24 @@ const StyledWrapper = styled.div`
     padding: 0.4vw 1vw;
     text-shadow: 0 0 2vw white;
     border-bottom: 0.1vw solid rgb(255, 0, 105);
+  }
+      @media (max-width: 568px) {
+    .submit {
+      width: 20vw;
+      height: 10vw;
+      font-size: 3.5vw;
+      padding: 2vw 4vw;
+      letter-spacing: 1vw;
+      border-radius: 1vw;
+    }
+
+
+    .submit:hover:not(.disabled),
+    .submit:focus:not(.disabled) {
+      font-size: 4vw;
+      letter-spacing: 2vw;
+      transform: scale(1.05);
+    }
   }
 `;
 

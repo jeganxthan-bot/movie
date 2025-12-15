@@ -96,8 +96,7 @@ const StyledWrapper = styled.div`
   .submit:hover:not(.disabled),
   .submit:focus:not(.disabled) {
     box-shadow: 0 0 2vw black, 0 0 1.2vw 0.1vw black,
-      4vw 0 2vw -0.5vw rgb(255, 0, 105),
-      -4vw 0 2vw -0.5vw rgb(255, 0, 105),
+      4vw 0 2vw -0.5vw rgb(255, 0, 105), -4vw 0 2vw -0.5vw rgb(255, 0, 105),
       0 -1vw 1vw -1vw rgb(255, 0, 105) inset;
     transform: scale(1.15);
     background: rgba(0, 0, 0, 0.2);
@@ -106,6 +105,23 @@ const StyledWrapper = styled.div`
     padding: 0.4vw 1vw;
     text-shadow: 0 0 2vw white;
     border-bottom: 0.1vw solid rgb(255, 0, 105);
+  }
+  @media (max-width: 568px) {
+    .submit {
+      width: 20vw;
+      height: 10vw;
+      font-size: 3.5vw;
+      padding: 2vw 4vw;
+      letter-spacing: 1vw;
+      border-radius: 1vw;
+    }
+
+    .submit:hover:not(.disabled),
+    .submit:focus:not(.disabled) {
+      font-size: 4vw;
+      letter-spacing: 2vw;
+      transform: scale(1.05);
+    }
   }
 `;
 

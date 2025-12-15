@@ -20,7 +20,7 @@ interface Show {
   year?: string | number;
 }
 
-const SLOTS_PER_PAGE = 16; // visual capacity (includes 2 ad slots)
+const SLOTS_PER_PAGE = 18; // visual capacity (includes 2 ad slots)
 const AD_AFTER = 8; // insert ads after 8 shows (1-based)
 const SHOWS_PER_PAGE = SLOTS_PER_PAGE - 2; // 14 shows per page max
 
@@ -405,42 +405,12 @@ export default function ShowsPage() {
             return (
               <div key={`ad-${idx}-${adNum}`} className="relative w-full group">
                 <div className="w-full aspect-[2/3] overflow-hidden rounded flex items-center justify-center bg-white border border-gray-200 shadow-sm p-3">
-                  {process.env.NODE_ENV === "development" ? (
-                    <div className="w-full flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
-                          <svg
-                            className="w-8 h-8 text-gray-400"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M3 8h18M3 12h18M3 16h18"
-                            />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold">Ad Slot</div>
-                          <div className="text-xs text-gray-500">
-                            dev placeholder
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-400">Ad #{adNum}</div>
-                    </div>
-                  ) : (
                     <div className="w-full flex items-center justify-center">
                       {/* Replace with your real adSlot IDs */}
                       <AdsenseAd
                         adSlot={adNum === 1 ? "8241933588" : "8241933589"}
                       />
                     </div>
-                  )}
                 </div>
                 <div className="mt-2 text-xs text-gray-500 text-center">
                   Sponsored
@@ -499,7 +469,7 @@ export default function ShowsPage() {
       <div className="mt-6 flex items-center justify-center gap-6">
         <PrevPage onClick={goPrev} disabled={currentPage === 1} />
 
-        <div className="text-sm text-gray-700">
+        <div className="text-gray-700">
           Page {currentPage} of {totalPages}
         </div>
 

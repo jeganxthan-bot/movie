@@ -1,7 +1,6 @@
 // app/api/shows/route.ts
 import { NextResponse } from "next/server";
 import { getDatabase } from "../../lib/mongodb";
-import { Redis } from "@upstash/redis";
 
 interface Show {
   _id: any;
@@ -24,14 +23,7 @@ interface ShowDTO {
   year: string | number | null;
 }
 
-/* Upstash client */
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL ?? "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN ?? "",
-});
-
-const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-
+/* Fetch TMDB Poster */
 async function fetchTmdbPoster(title: string): Promise<string | null> {
   try {
     const apiKey = process.env.TMDB_API_KEY;
@@ -86,33 +78,9 @@ export async function GET() {
     const showsDTO: ShowDTO[] = [];
 
     for (const show of shows) {
-      const keyTitle = (show.show_title ?? "").toString().toLowerCase().replace(/\s+/g, "_");
-      const cacheKey = `poster:${keyTitle}`;
-
-      // Try Redis cache
-      let cachedPoster: string | null = null;
-      try {
-        const cached = await redis.get(cacheKey);
-        cachedPoster = typeof cached === "string" ? cached : null;
-      } catch (err) {
-        // Log and continue if redis fails
-        console.warn("Redis GET failed:", err);
-      }
-
-      let finalPoster = cachedPoster ?? "";
-
-      // If not cached, fetch from TMDB and store
-      if (!finalPoster) {
-        const tmdbPoster = await fetchTmdbPoster(show.show_title ?? "");
-        finalPoster = tmdbPoster ?? "";
-
-        // Best-effort cache set
-        try {
-          await redis.set(cacheKey, finalPoster, { ex: CACHE_TTL });
-        } catch (err) {
-          console.warn("Redis SET failed:", err);
-        }
-      }
+      // Fetch poster directly from TMDB without Redis caching
+      const tmdbPoster = await fetchTmdbPoster(show.show_title ?? "");
+      const finalPoster = tmdbPoster ?? ""; // Fallback to empty string if no poster found
 
       // Build DTO fields
       const dto: ShowDTO = {

@@ -166,7 +166,7 @@ export default function SeriesPage() {
         <div className="absolute inset-0 bg-black/40"></div>
         <div
           className="absolute top-4 left-4 z-30 bg-gray-900 hover:bg-gray-600 rounded-full p-2"
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
         >
           <MoveLeft size={32} className="text-white" />
         </div>

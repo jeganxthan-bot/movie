@@ -1,24 +1,6 @@
 // app/api/series/route.ts
 import { NextResponse } from "next/server";
 import { getDatabase } from "../../lib/mongodb";
-import { Redis } from "@upstash/redis";
-
-/* -------------------------
-   Redis client (Upstash)
--------------------------- */
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL ?? "";
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN ?? "";
-const CACHE_TTL = Number(process.env.CACHE_TTL_SECONDS ?? "3600"); // seconds
-
-let redis: Redis | null = null;
-if (UPSTASH_URL && UPSTASH_TOKEN) {
-  try {
-    redis = new Redis({ url: UPSTASH_URL, token: UPSTASH_TOKEN });
-  } catch (err) {
-    console.warn("Upstash init failed:", err);
-    redis = null;
-  }
-}
 
 /* -------------------------
    Helpers
@@ -65,26 +47,10 @@ export async function GET(request: Request) {
     const col = db.collection("series_data");
 
     // -------------------------
-    // 1) Partial search => cached per normalized query
+    // 1) Partial search => query DB
     // -------------------------
     if (searchParam) {
       const normalized = searchParam.trim();
-      const cacheKey = keyForSearch(normalized);
-
-      // Try cache
-      if (redis) {
-        try {
-          const raw = await redis.get(cacheKey);
-          const cached = typeof raw === "string" ? JSON.parse(raw) : raw;
-          if (cached) {
-            return NextResponse.json(cached, { status: 200, headers: { "x-cache": "HIT" } });
-          }
-        } catch (err) {
-          console.warn("Redis GET (search) failed:", err);
-        }
-      }
-
-      // Not cached -> query DB
       const q = escapeRegex(normalized);
       const regex = new RegExp(q, "i");
       const proj = { show_title: 1, poster: 1, series_logo: 1 };
@@ -100,20 +66,11 @@ export async function GET(request: Request) {
 
       const payload = { results, total: results.length };
 
-      // Cache the payload (best-effort)
-      if (redis) {
-        try {
-          await redis.set(cacheKey, JSON.stringify(payload), { ex: CACHE_TTL });
-        } catch (err) {
-          console.warn("Redis SET (search) failed:", err);
-        }
-      }
-
-      return NextResponse.json(payload, { status: 200, headers: { "x-cache": "MISS" } });
+      return NextResponse.json(payload, { status: 200 });
     }
 
     // -------------------------
-    // 2) Exact show_title -> full payload (cache per title+season)
+    // 2) Exact show_title -> full payload
     // -------------------------
     if (showTitleParam) {
       // season handling
@@ -129,20 +86,6 @@ export async function GET(request: Request) {
         seasonIndex = Math.max(0, n - 1);
       }
       const seasonNumber = seasonIndex + 1;
-      const cacheKey = keyForTitleSeason(showTitleParam, seasonNumber);
-
-      // Try cache
-      if (redis) {
-        try {
-          const raw = await redis.get(cacheKey);
-          const cached = typeof raw === "string" ? JSON.parse(raw) : raw;
-          if (cached) {
-            return NextResponse.json(cached, { status: 200, headers: { "x-cache": "HIT" } });
-          }
-        } catch (err) {
-          console.warn("Redis GET (title) failed:", err);
-        }
-      }
 
       // Not cached -> find show
       const show = (await col.findOne({ show_title: showTitleParam })) as Show | null;
@@ -194,16 +137,7 @@ export async function GET(request: Request) {
         data: transformedEpisodes,
       };
 
-      // Cache the payload (best-effort)
-      if (redis) {
-        try {
-          await redis.set(cacheKey, JSON.stringify(payload), { ex: CACHE_TTL });
-        } catch (err) {
-          console.warn("Redis SET (title) failed:", err);
-        }
-      }
-
-      return NextResponse.json(payload, { status: 200, headers: { "x-cache": "MISS" } });
+      return NextResponse.json(payload, { status: 200 });
     }
 
     // 3) neither provided
