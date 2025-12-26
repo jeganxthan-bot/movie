@@ -9,7 +9,13 @@ const nextConfig = {
     ],
   },
   images: {
-    domains: ['m.media-amazon.com', 'upload.wikimedia.org', "image.tmdb.org",],
+    domains: [
+      'm.media-amazon.com', 
+      'upload.wikimedia.org', 
+      'image.tmdb.org', 
+      'img10.hotstar.com',
+      'static.wikia.nocookie.net', // Add this line
+    ],
   },
 };
 

@@ -26,10 +26,13 @@ interface ShowDTO {
 /* Fetch TMDB Poster */
 async function fetchTmdbPoster(title: string): Promise<string | null> {
   try {
-    const apiKey = process.env.TMDB_API_KEY;
-    if (!apiKey) return null;
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY || process.env.TMDB_API_KEY;
+    if (!apiKey) {
+      console.error("TMDB API Key missing");
+      return null;
+    }
 
-    const url = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encodeURIComponent(
+    const url = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(
       title
     )}`;
 
