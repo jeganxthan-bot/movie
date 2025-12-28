@@ -4,6 +4,8 @@ import { ObjectId } from "mongodb";
 import { getDatabase } from "@/app/lib/mongodb";
 import { encryptToken } from "@/app/lib/crypto"; // keep only what is used
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }

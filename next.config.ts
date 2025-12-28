@@ -1,20 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    appDir: true,
-    allowedDevOrigins: [
-      'http://localhost:3000', // your dev origin
-      'http://127.0.0.1:3000', // optional
-    ],
-  },
   images: {
-    domains: [
-      'm.media-amazon.com', 
-      'staging.strem.io',
-      'img10.hotstar.com',
-      'static.wikia.nocookie.net',
-      'images.metahub.space',
+    remotePatterns: [
+      { protocol: "https", hostname: "m.media-amazon.com" },
+      { protocol: "https", hostname: "staging.strem.io" },
+      { protocol: "https", hostname: "img10.hotstar.com" },
+      { protocol: "https", hostname: "static.wikia.nocookie.net" },
+      { protocol: "https", hostname: "images.metahub.space" },
     ],
   },
   compiler: {
