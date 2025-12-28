@@ -1,57 +1,89 @@
-import crypto from 'crypto';
-
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || process.env.URL_SECRET_KEY || ''; // Must be 256 bits (32 characters)
-const IV_LENGTH = 16; // For AES, this is always 16
-
-function getCipherKey() {
-    if (!ENCRYPTION_KEY) {
-        throw new Error("ENCRYPTION_KEY is not defined");
-    }
-    // Ensure key is 32 bytes. If hex, parse it. If string, hash it or pad it?
-    // The existing code assumed hex. Let's stick to that or be more flexible.
-    // If it's 64 chars hex, it's 32 bytes.
-    if (ENCRYPTION_KEY.length === 64) {
-        return Buffer.from(ENCRYPTION_KEY, 'hex');
-    }
-    // If it's 32 chars, assume it's utf8 (not ideal for security but common in envs)
-    // Or maybe the user provided a hex string.
-    // Let's try to follow the previous pattern but make it robust.
-    return Buffer.from(ENCRYPTION_KEY, 'hex');
-}
-
-export function encrypt(text: string): string {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv('aes-256-cbc', getCipherKey(), iv);
-    let encrypted = cipher.update(text);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-export function decrypt(text: string): string {
-    const textParts = text.split(':');
-    const iv = Buffer.from(textParts.shift()!, 'hex');
-    const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', getCipherKey(), iv);
-    let decrypted = decipher.update(encryptedText);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
-}
-
 export interface TokenData {
-    url: string;
-    expire: number;
+  url: string;
+  expire: number;
 }
 
-export function encryptToken(data: TokenData): string {
-    const json = JSON.stringify(data);
-    return encrypt(json);
+const ALGORITHM = "AES-GCM";
+const IV_LENGTH = 12; // 12 bytes for GCM
+
+function fromHex(hex: string): Uint8Array {
+  const match = hex.match(/.{1,2}/g);
+  if (!match) return new Uint8Array();
+  return new Uint8Array(match.map((byte) => parseInt(byte, 16)));
 }
 
-export function decryptToken(token: string): TokenData {
-    try {
-        const json = decrypt(token);
-        return JSON.parse(json);
-    } catch (error) {
-        throw new Error("Invalid token");
-    }
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function getKeyMaterial(): Uint8Array {
+  const keyStr =
+    process.env.ENCRYPTION_KEY || process.env.URL_SECRET_KEY || "";
+  
+  if (!keyStr) {
+    // Return a dummy key or throw? Original threw.
+    throw new Error("ENCRYPTION_KEY is not defined");
+  }
+
+  // Original logic assumed hex.
+  return fromHex(keyStr);
+}
+
+async function getCryptoKey(): Promise<CryptoKey> {
+  const keyData = getKeyMaterial();
+  return crypto.subtle.importKey(
+    "raw",
+    keyData as any,
+    { name: ALGORITHM },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+export async function encrypt(text: string): Promise<string> {
+  const key = await getCryptoKey();
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const encoded = new TextEncoder().encode(text);
+
+  const encrypted = await crypto.subtle.encrypt(
+    { name: ALGORITHM, iv },
+    key,
+    encoded
+  );
+
+  return `${toHex(iv as any)}:${toHex(encrypted as any)}`;
+}
+
+export async function decrypt(text: string): Promise<string> {
+  const [ivHex, dataHex] = text.split(":");
+  if (!ivHex || !dataHex) throw new Error("Invalid cipher text format");
+
+  const iv = fromHex(ivHex);
+  const data = fromHex(dataHex);
+  const key = await getCryptoKey();
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: ALGORITHM, iv },
+    key,
+    data
+  );
+
+  return new TextDecoder().decode(decrypted);
+}
+
+export async function encryptToken(data: TokenData): Promise<string> {
+  const json = JSON.stringify(data);
+  return encrypt(json);
+}
+
+export async function decryptToken(token: string): Promise<TokenData> {
+  try {
+    const json = await decrypt(token);
+    return JSON.parse(json);
+  } catch (error) {
+    console.error("Decrypt error", error);
+    throw new Error("Invalid token");
+  }
 }

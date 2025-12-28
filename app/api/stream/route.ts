@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { decryptToken } from "../../lib/crypto";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const enc = searchParams.get("enc");
@@ -11,7 +13,7 @@ export async function GET(request: Request) {
 
     let tokenData;
     try {
-        tokenData = decryptToken(enc);
+        tokenData = await decryptToken(enc);
     } catch (error) {
         console.error("Token decryption failed:", error);
         return new NextResponse("Invalid token", { status: 403 });

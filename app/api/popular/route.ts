@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getDatabase } from "../../lib/mongodb";
+import { getDatabase } from "@/app/lib/mongodb";
 import { SeriesDTO } from "@/app/dto/seriesDTO";
 
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /* -------------------------
    Helpers

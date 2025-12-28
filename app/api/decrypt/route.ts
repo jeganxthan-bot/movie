@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { decrypt } from "../../lib/crypto";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -13,7 +15,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const decryptedUrl = decrypt(encryptedUrl);
+        const decryptedUrl = await decrypt(encryptedUrl);
 
         return new NextResponse(
             JSON.stringify({ decryptedUrl }),

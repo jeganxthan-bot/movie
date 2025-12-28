@@ -5,7 +5,7 @@ import { getDatabase } from "../../lib/mongodb";
 /* -------------------------
    Helpers
 -------------------------- */
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 function escapeRegex(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

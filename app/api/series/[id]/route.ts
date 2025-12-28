@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDatabase } from "@/app/lib/mongodb";
 import { encryptToken } from "@/app/lib/crypto"; // keep only what is used
 
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(
   req: Request,
@@ -65,7 +65,7 @@ export async function GET(
         continue;
       }
 
-      transformed[groupKey] = eps.map((ep: any) => {
+      transformed[groupKey] = await Promise.all(eps.map(async (ep: any) => {
         const title = ep?.title ?? ep?.episode_title ?? "";
         const description = ep?.description ?? ep?.summary ?? "";
         const image_url = ep?.image_url ?? ep?.image ?? "";
@@ -76,7 +76,7 @@ export async function GET(
           if (ep?.url) {
             // Token expires in 2 minutes
             const expire = Date.now() + 120 * 1000;
-            encryptedUrl = encryptToken({ url: ep.url, expire });
+            encryptedUrl = await encryptToken({ url: ep.url, expire });
           }
         } catch (err) {
           console.error("Encryption failed:", err);
@@ -88,7 +88,7 @@ export async function GET(
           image_url,
           url: encryptedUrl,
         };
-      });
+      }));
     }
 
     const payload = {

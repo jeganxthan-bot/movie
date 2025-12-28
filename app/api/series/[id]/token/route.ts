@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { getDatabase } from "@/app/lib/mongodb";
 import { encryptToken } from "@/app/lib/crypto";
 
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(
     req: Request,
@@ -50,7 +50,7 @@ export async function GET(
 
         // Generate token with 120s expiry
         const expire = Date.now() + 120 * 1000;
-        const token = encryptToken({ url, expire });
+        const token = await encryptToken({ url, expire });
 
         return NextResponse.json({ token });
 

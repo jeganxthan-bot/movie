@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "../../lib/mongodb";
 
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 interface Show {
   _id: any;
