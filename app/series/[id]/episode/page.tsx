@@ -1,21 +1,19 @@
-// app/series/[id]/episode/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
-import { MoveLeft } from "lucide-react";
+import { MoveLeft, Play, Info } from "lucide-react";
 import Loader from "@/app/components/Loader";
-import Player from "@/app/components/ArtPlayer";
 import ImageWithLoader from "@/app/components/ImageWithLoader";
 
 type Episode = {
   title: string;
   description?: string;
   image_url?: string;
-  url?: string | null; // may be token or full url depending on API
-  group?: string; // season/group key from show.data
-  idx?: number; // index within the group
+  url?: string | null;
+  group?: string;
+  idx?: number;
 };
 
 type SeasonData = {
@@ -30,6 +28,7 @@ type Show = {
   seasons_count?: number | string;
   description?: string;
   series_logo?: string;
+  poster?: string;
   data?: SeasonData;
   season?: number;
 };
@@ -138,10 +137,8 @@ export default function EpisodePlayerPage() {
         );
         if (found !== -1) setCurrentEpisodeIdx(found);
       } else if (encParam) {
-        // opened with enc param - we don't know which episode; keep null
         setCurrentEpisodeIdx(null);
       } else {
-        // default to first episode
         if (flattened.length > 0) setCurrentEpisodeIdx(0);
       }
     } catch (err: any) {
@@ -208,9 +205,7 @@ export default function EpisodePlayerPage() {
         return;
       }
 
-      // must have group & index to fetch token
       if (!id || !groupParam || indexParam == null) {
-        // nothing to do
         return;
       }
 
@@ -225,7 +220,6 @@ export default function EpisodePlayerPage() {
         if (!mounted) return;
         setStreamUrl(tokenUrl);
 
-        // also set the highlight (if episodes already fetched)
         if (episodes.length > 0) {
           const found = episodes.findIndex(
             (e) =>
@@ -249,21 +243,21 @@ export default function EpisodePlayerPage() {
   }, [id, encParam, groupParam, indexParam, seasonParam, episodes]);
 
   // Loading / error UI
-  if (loading) {
+  if (loading && !show) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-black text-white">
+      <div className="w-full h-screen flex items-center justify-center bg-[#0f0f0f] text-white">
         <Loader />
       </div>
     );
   }
 
-  if (error) {
+  if (error && !show) {
     return (
-      <div className="p-6 max-w-6xl mx-auto text-center mt-20">
-        <p className="text-red-500 text-xl mb-4">{error}</p>
+      <div className="min-h-screen bg-[#0f0f0f] flex flex-col items-center justify-center">
+        <p className="text-red-500 text-xl mb-6 font-bold">{error}</p>
         <button
           onClick={() => router.back()}
-          className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
+          className="px-8 py-3 bg-[#E50914] text-white rounded font-bold hover:bg-[#b00710] transition-colors"
         >
           Go Back
         </button>
@@ -271,117 +265,150 @@ export default function EpisodePlayerPage() {
     );
   }
 
-  if (!show) {
-    return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <p className="text-gray-600">No show data</p>
-      </div>
-    );
-  }
+  // Active episode details
+  const activeEpisode =
+    currentEpisodeIdx !== null && episodes[currentEpisodeIdx]
+      ? episodes[currentEpisodeIdx]
+      : null;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {titleParam
-              ? decodeURIComponent(titleParam)
-              : show.show_title ?? "Episode Player"}
-          </h1>
-        </div>
-
-        <div
-          className="absolute top-4 left-4 z-30 bg-gray-900 hover:bg-gray-600 rounded-full p-2 cursor-pointer"
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
+      {/* Back Nav */}
+      <div className="absolute top-0 left-0 w-full z-50 p-6 bg-gradient-to-b from-black/80 to-transparent flex items-center">
+        <button
           onClick={() => router.push(`/series/${id}`)}
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group"
         >
-          <MoveLeft size={32} className="text-white" />
-        </div>
-      </div>
-
-      <div className="w-full h-[50vh] bg-black rounded overflow-hidden relative">
-        {streamUrl ? (
-          <iframe
-            src={streamUrl}
-            title={titleParam ? decodeURIComponent(titleParam) : "player"}
-            className="w-full h-full"
-            allowFullScreen
-            style={{ border: "none" }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-white">
-            <p>No stream available</p>
+          <div className="bg-black/50 p-2 rounded-full border border-gray-600 group-hover:border-white transition-colors">
+            <MoveLeft size={24} />
           </div>
-        )}
+          <span className="font-bold text-lg drop-shadow-md">Back to Series</span>
+        </button>
       </div>
 
-      <div className="space-y-8 mt-6">
-        {Object.entries(show.data ?? {}).map(([seasonName, eps]) => (
-          <div key={seasonName}>
-            <h3 className="text-lg font-medium mb-2">{seasonName}</h3>
+      {/* Main Content */}
+      <div className="pt-24 pb-20 px-4 md:px-12 max-w-[1600px] mx-auto space-y-12">
 
-            {/* Horizontal scroll container */}
-            <div className="flex overflow-x-auto gap-4 pb-3 snap-x snap-mandatory scrollbar-hide">
-              {Array.isArray(eps) && eps.length > 0 ? (
-                eps.map((ep, idx) => {
-                  const flatIndex = episodes.findIndex(
-                    (e) => e.group === seasonName && Number(e.idx) === idx
-                  );
-                  const active =
-                    flatIndex !== -1 && currentEpisodeIdx === flatIndex;
+        {/* Player Section */}
+        <section className="w-full flex flex-col gap-6">
+          <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-gray-800 ring-1 ring-white/10">
+            {streamUrl ? (
+              <iframe
+                src={streamUrl}
+                title={activeEpisode?.title || "Episode Player"}
+                className="w-full h-full"
+                allowFullScreen
+                allow="autoplay; encrypted-media"
+                style={{ border: "none" }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 gap-4">
+                <Loader />
+                <p className="text-sm tracking-widest uppercase">Loading Stream...</p>
+              </div>
+            )}
+          </div>
 
-                  return (
-                    <div
-                      key={idx}
-                      className={`min-w-[280px] md:min-w-[350px] snap-start 
-              rounded-lg p-3 border cursor-pointer group 
-              ${
-                active
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
-                  : "hover:scale-105 hover:shadow-lg transition-transform duration-200 ease-in-out"
-              }`}
-                      onClick={() => goToPlayer(seasonName, idx, ep.title)}
-                    >
-                      {ep.image_url ? (
-                        <div className="relative w-full h-40 md:w-78 md:h-42 rounded-md overflow-hidden">
-                          <ImageWithLoader
-                            src={ep.image_url}
-                            alt={ep.title}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full h-60 md:w-48 md:h-32 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
-                          No Image
-                        </div>
-                      )}
+          {/* Episode Info */}
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 animate-slideUp">
+            <div className="space-y-2 max-w-3xl">
+              <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight">
+                {activeEpisode?.title || show?.show_title || "Loading..."}
+              </h1>
+              <div className="flex items-center gap-4 text-gray-400 text-sm font-medium">
+                {activeEpisode?.group && <span className="text-yellow-400">{activeEpisode.group}</span>}
+                {show?.rating && <span className="border border-gray-600 px-2 py-0.5 rounded text-xs">{show.rating}</span>}
+                {show?.year && <span>{show.year}</span>}
+              </div>
+              <p className="text-gray-300 text-lg leading-relaxed pt-2 max-w-2xl">
+                {activeEpisode?.description || show?.description || "No description available."}
+              </p>
+            </div>
 
-                      <div className="flex-1 mt-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">{ep.title}</h4>
-                          {active && (
-                            <span className="text-xs text-indigo-600">
-                              Playing
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                          {ep.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-gray-500">
-                  No episodes available for this season.
-                </div>
-              )}
+            {/* Actions (Future: Next/Prev buttons here if desired) */}
+            <div className="flex gap-4">
+              {/* Placeholder for Next/Prev buttons if requested */}
             </div>
           </div>
-        ))}
+        </section>
+
+        {/* Episode Browser (Netflix Style) */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Play className="text-red-600 fill-red-600" />
+            Episodes
+          </h2>
+          {Object.entries(show?.data ?? {}).map(([seasonName, eps]) => (
+            <div key={seasonName} className="space-y-4">
+              {Object.keys(show?.data ?? {}).length > 1 && (
+                <h3 className="text-xl text-gray-400 font-medium pl-2 border-l-4 border-red-600">{seasonName}</h3>
+              )}
+
+              <div className="flex overflow-x-auto gap-4 p-4 pb-6 scrollbar-hide snap-x">
+                {Array.isArray(eps) && eps.length > 0 ? (
+                  eps.map((ep, idx) => {
+                    const flatIndex = episodes.findIndex(
+                      (e) => e.group === seasonName && Number(e.idx) === idx
+                    );
+                    const isActive = flatIndex !== -1 && currentEpisodeIdx === flatIndex;
+
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => goToPlayer(seasonName, idx, ep.title)}
+                        className={`
+                                            snap-start shrink-0 w-[300px] cursor-pointer group relative rounded-lg overflow-hidden transition-all duration-300
+                                            ${isActive ? "ring-2 ring-red-600 scale-[1.02]" : "hover:scale-105 opacity-80 hover:opacity-100"}
+                                        `}
+                      >
+                        <div className="relative aspect-video bg-zinc-900">
+                          {ep.image_url ? (
+                            <Image
+                              src={ep.image_url}
+                              alt={ep.title}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                              <Info />
+                            </div>
+                          )}
+                          {/* Overlay Play Icon */}
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-red-600 p-3 rounded-full shadow-lg">
+                              <Play fill="white" className="text-white ml-1" size={20} />
+                            </div>
+                          </div>
+                          {/* Progress Bar (Mock) */}
+                          {isActive && <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-600" />}
+                        </div>
+
+                        <div className="p-4 bg-[#181818] h-full">
+                          <div className="flex justify-between items-start mb-1">
+                            <h4 className={`font-bold text-base line-clamp-1 ${isActive ? "text-red-500" : "text-white"}`}>
+                              {idx + 1}. {ep.title}
+                            </h4>
+                            <span className="text-xs text-gray-500 font-mono">
+                              {ep.idx !== undefined ? `${ep.idx + 1}m` : "45m"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">
+                            {ep.description || "No description available for this episode."}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="text-gray-500">No episodes found.</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </section>
+
       </div>
     </div>
   );

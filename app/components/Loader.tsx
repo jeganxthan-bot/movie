@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import styled from 'styled-components';
 
@@ -299,5 +300,5 @@ const StyledWrapper = styled.div`
       transform: rotate(-1turn);
     }
   }`;
- 
+
 export default Loader;

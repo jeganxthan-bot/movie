@@ -6,6 +6,7 @@ interface Show {
   _id: any;
   show_title: string;
   series_logo?: string;
+  poster?: string;
   seasons_data?: any[]; // if available as array
   seasons?: number | string;
   description?: string;
@@ -21,36 +22,6 @@ interface ShowDTO {
   description: string;
   seasons: number;
   year: string | number | null;
-}
-
-/* Fetch TMDB Poster */
-async function fetchTmdbPoster(title: string): Promise<string | null> {
-  try {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY || process.env.TMDB_API_KEY;
-    if (!apiKey) {
-      console.error("TMDB API Key missing");
-      return null;
-    }
-
-    const url = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(
-      title
-    )}`;
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn("TMDB responded non-200:", res.status);
-      return null;
-    }
-
-    const data = await res.json();
-    const posterPath = data?.results?.[0]?.poster_path;
-    if (!posterPath) return null;
-
-    return `https://image.tmdb.org/t/p/w500${posterPath}`;
-  } catch (e) {
-    console.error("TMDB FETCH ERROR:", e);
-    return null;
-  }
 }
 
 /* Helper: try to resolve seasons count to a number */
@@ -78,26 +49,15 @@ export async function GET() {
     const db = await getDatabase();
     const shows = (await db.collection("series_data").find({}).toArray()) as unknown as Show[];
 
-    const showsDTO: ShowDTO[] = [];
-
-    for (const show of shows) {
-      // Fetch poster directly from TMDB without Redis caching
-      const tmdbPoster = await fetchTmdbPoster(show.show_title ?? "");
-      const finalPoster = tmdbPoster ?? ""; // Fallback to empty string if no poster found
-
-      // Build DTO fields
-      const dto: ShowDTO = {
-        _id: show._id?.toString?.() ?? String(show._id ?? ""),
-        show_title: show.show_title ?? "",
-        series_logo: show.series_logo ?? "",
-        poster: finalPoster,
-        description: show.description ?? "",
-        seasons: resolveSeasonsCount(show),
-        year: show.year ?? null,
-      };
-
-      showsDTO.push(dto);
-    }
+    const showsDTO: ShowDTO[] = shows.map((show) => ({
+      _id: show._id?.toString?.() ?? String(show._id ?? ""),
+      show_title: show.show_title ?? "",
+      series_logo: show.series_logo ?? "",
+      poster: show.poster ?? "",
+      description: show.description ?? "",
+      seasons: resolveSeasonsCount(show),
+      year: show.year ?? null,
+    }));
 
     return NextResponse.json(showsDTO, { status: 200 });
   } catch (e) {

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import styled from "styled-components";
 
@@ -8,7 +9,7 @@ interface Props {
 
 const NextPage = ({ onClick, disabled }: Props) => {
   return (
-    <StyledWrapper>
+    <StyledNextPage>
       <button
         className={`submit ${disabled ? "disabled" : ""}`}
         onClick={disabled ? undefined : onClick}
@@ -16,11 +17,11 @@ const NextPage = ({ onClick, disabled }: Props) => {
       >
         next
       </button>
-    </StyledWrapper>
+    </StyledNextPage>
   );
 };
 
-const StyledWrapper = styled.div`
+const StyledNextPage = styled.div`
   .submit {
     display: flex;
     justify-content: center;

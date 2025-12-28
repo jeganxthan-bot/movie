@@ -105,6 +105,8 @@ export async function GET(
       show_characteristics: show.show_characteristics ?? [],
       audio: show.audio ?? [],
       subtitles: show.subtitles ?? [],
+      fanart: show.fanart ?? "",
+      background: show.background ?? "",
       season: seasonNumber,
       data: transformed,
     };

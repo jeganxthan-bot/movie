@@ -11,12 +11,15 @@ const nextConfig = {
   images: {
     domains: [
       'm.media-amazon.com', 
-      'upload.wikimedia.org', 
-      'image.tmdb.org', 
+      'staging.strem.io',
       'img10.hotstar.com',
-      'static.wikia.nocookie.net', // Add this line
+      'static.wikia.nocookie.net',
+      'images.metahub.space',
     ],
+  },
+  compiler: {
+    styledComponents: true,
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

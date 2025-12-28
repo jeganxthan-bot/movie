@@ -10,7 +10,7 @@ interface Props {
 
 const PrevPage = ({ onClick, disabled = false }: Props) => {
   return (
-    <StyledWrapper>
+    <StyledPrevPage>
       <button
         className={`submit ${disabled ? "disabled" : ""}`}
         onClick={disabled ? undefined : onClick}
@@ -21,11 +21,11 @@ const PrevPage = ({ onClick, disabled = false }: Props) => {
       >
         prev
       </button>
-    </StyledWrapper>
+    </StyledPrevPage>
   );
 };
 
-const StyledWrapper = styled.div`
+const StyledPrevPage = styled.div`
   .submit {
     display: flex;
     justify-content: center;
