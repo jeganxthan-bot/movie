@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "../../lib/mongodb";
 
+export const dynamic = "force-dynamic";
+
 interface Show {
   _id: any;
   show_title: string;
