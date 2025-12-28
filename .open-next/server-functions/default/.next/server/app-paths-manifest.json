@@ -1,0 +1,16 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app-edge-has-no-entrypoint",
+  "/api/decrypt/route": "app/api/decrypt/route.js",
+  "/api/popular/route": "app/api/popular/route.js",
+  "/api/series/[id]/route": "app/api/series/[id]/route.js",
+  "/api/series/[id]/token/route": "app/api/series/[id]/token/route.js",
+  "/api/series/route": "app/api/series/route.js",
+  "/api/shows/route": "app/api/shows/route.js",
+  "/api/stream/route": "app/api/stream/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app-edge-has-no-entrypoint",
+  "/series/[id]/episode/page": "app-edge-has-no-entrypoint",
+  "/series/[id]/page": "app-edge-has-no-entrypoint",
+  "/series/page": "app-edge-has-no-entrypoint"
+}

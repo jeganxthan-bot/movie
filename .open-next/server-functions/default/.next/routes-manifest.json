@@ -1,0 +1,137 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/series/[id]",
+      "regex": "^/api/series/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/series/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/series/[id]/token",
+      "regex": "^/api/series/([^/]+?)/token(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/series/(?<nxtPid>[^/]+?)/token(?:/)?$"
+    },
+    {
+      "page": "/series/[id]",
+      "regex": "^/series/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/series/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/series/[id]/episode",
+      "regex": "^/series/([^/]+?)/episode(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/series/(?<nxtPid>[^/]+?)/episode(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/decrypt",
+      "regex": "^/api/decrypt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/decrypt(?:/)?$"
+    },
+    {
+      "page": "/api/popular",
+      "regex": "^/api/popular(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/popular(?:/)?$"
+    },
+    {
+      "page": "/api/series",
+      "regex": "^/api/series(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/series(?:/)?$"
+    },
+    {
+      "page": "/api/shows",
+      "regex": "^/api/shows(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/shows(?:/)?$"
+    },
+    {
+      "page": "/api/stream",
+      "regex": "^/api/stream(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/stream(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/series",
+      "regex": "^/series(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/series(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/decrypt": {},
+    "/api/series/[id]/token": {},
+    "/api/series/[id]": {},
+    "/api/series": {},
+    "/api/shows": {},
+    "/api/stream": {},
+    "/api/popular": {},
+    "/series/[id]": {},
+    "/series": {},
+    "/": {},
+    "/series/[id]/episode": {}
+  }
+}

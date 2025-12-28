@@ -1,0 +1,16 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/decrypt/route": "/api/decrypt",
+  "/api/popular/route": "/api/popular",
+  "/api/series/[id]/route": "/api/series/[id]",
+  "/api/series/[id]/token/route": "/api/series/[id]/token",
+  "/api/series/route": "/api/series",
+  "/api/shows/route": "/api/shows",
+  "/api/stream/route": "/api/stream",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/series/[id]/episode/page": "/series/[id]/episode",
+  "/series/[id]/page": "/series/[id]",
+  "/series/page": "/series"
+}
