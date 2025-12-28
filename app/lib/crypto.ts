@@ -4,48 +4,64 @@ export interface TokenData {
 }
 
 const ALGORITHM = "AES-GCM";
-const IV_LENGTH = 12; // 12 bytes for GCM
+const IV_LENGTH = 12;
 
+/* -------------------------
+   Utils
+-------------------------- */
 function fromHex(hex: string): Uint8Array {
   const match = hex.match(/.{1,2}/g);
   if (!match) return new Uint8Array();
-  return new Uint8Array(match.map((byte) => parseInt(byte, 16)));
+  return new Uint8Array(match.map(b => parseInt(b, 16)));
 }
 
 function toHex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-function getKeyMaterial(): Uint8Array {
-  const keyStr =
-    process.env.ENCRYPTION_KEY || process.env.URL_SECRET_KEY || "";
-  
-  if (!keyStr) {
-    // Return a dummy key or throw? Original threw.
-    throw new Error("ENCRYPTION_KEY is not defined");
-  }
+function toABView(u8: Uint8Array): Uint8Array<ArrayBuffer> {
+  const ab = u8.buffer.slice(
+    u8.byteOffset,
+    u8.byteOffset + u8.byteLength
+  ) as ArrayBuffer;
 
-  // Original logic assumed hex.
-  return fromHex(keyStr);
+  return new Uint8Array(ab);
+}
+
+/* -------------------------
+   Key
+-------------------------- */
+function getKeyMaterial(): Uint8Array<ArrayBuffer> {
+  const keyStr = process.env.ENCRYPTION_KEY || "";
+  if (!keyStr) throw new Error("ENCRYPTION_KEY missing");
+  return toABView(fromHex(keyStr));
 }
 
 async function getCryptoKey(): Promise<CryptoKey> {
-  const keyData = getKeyMaterial();
   return crypto.subtle.importKey(
     "raw",
-    keyData as any,
+    getKeyMaterial(),
     { name: ALGORITHM },
     false,
     ["encrypt", "decrypt"]
   );
 }
 
+/* -------------------------
+   Encrypt
+-------------------------- */
 export async function encrypt(text: string): Promise<string> {
   const key = await getCryptoKey();
-  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-  const encoded = new TextEncoder().encode(text);
+
+  const iv = toABView(
+    crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  );
+
+  const encoded = toABView(
+    new TextEncoder().encode(text)
+  );
 
   const encrypted = await crypto.subtle.encrypt(
     { name: ALGORITHM, iv },
@@ -53,15 +69,18 @@ export async function encrypt(text: string): Promise<string> {
     encoded
   );
 
-  return `${toHex(iv as any)}:${toHex(encrypted as any)}`;
+  return `${toHex(iv.buffer)}:${toHex(encrypted)}`;
 }
 
+/* -------------------------
+   Decrypt
+-------------------------- */
 export async function decrypt(text: string): Promise<string> {
   const [ivHex, dataHex] = text.split(":");
-  if (!ivHex || !dataHex) throw new Error("Invalid cipher text format");
+  if (!ivHex || !dataHex) throw new Error("Invalid cipher");
 
-  const iv = fromHex(ivHex);
-  const data = fromHex(dataHex);
+  const iv = toABView(fromHex(ivHex));
+  const data = toABView(fromHex(dataHex));
   const key = await getCryptoKey();
 
   const decrypted = await crypto.subtle.decrypt(
@@ -72,16 +91,19 @@ export async function decrypt(text: string): Promise<string> {
 
   return new TextDecoder().decode(decrypted);
 }
+export interface TokenData {
+  url: string;
+  expire: number;
+}
 
 export async function encryptToken(data: TokenData): Promise<string> {
-  const json = JSON.stringify(data);
-  return encrypt(json);
+  return encrypt(JSON.stringify(data));
 }
 
 export async function decryptToken(token: string): Promise<TokenData> {
   try {
     const json = await decrypt(token);
-    return JSON.parse(json);
+    return JSON.parse(json) as TokenData;
   } catch (error) {
     console.error("Decrypt error", error);
     throw new Error("Invalid token");
