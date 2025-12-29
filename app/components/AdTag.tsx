@@ -7,7 +7,8 @@ export default function AdTag() {
     <>
       {/* Load aclib script FIRST (example URL – adjust if needed) */}
       <Script
-        src="https://example-ad-network.com/aclib.js"
+        id="aclib"
+        src="//acscdn.com/script/aclib.js"
         strategy="afterInteractive"
       />
 
@@ -19,7 +20,7 @@ export default function AdTag() {
           __html: `
             if (window.aclib) {
               window.aclib.runAutoTag({
-                zoneId: 'zrcgpvy7mc',
+                zoneId: 'ty8tfjuxfj',
               });
             }
           `,
