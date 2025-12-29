@@ -95,14 +95,6 @@ export default function PopularSeries({ seriesList, searchQuery, setSearchQuery 
                 </h3>
                 <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
                   <span>{series.year || "2021"}</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-red-600">♥</span>
-                    <span className="text-gray-400">9.8</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                    <span className="text-gray-400">8.4</span>
-                  </div>
                 </div>
               </div>
             </div>

@@ -2,15 +2,15 @@
   "version": 1,
   "functions": {
     "/api/decrypt": {},
-    "/api/series/[id]/token": {},
-    "/api/series/[id]": {},
-    "/api/series": {},
-    "/api/shows": {},
-    "/api/stream": {},
     "/api/popular": {},
+    "/api/shows": {},
+    "/api/series": {},
+    "/api/series/[id]": {},
+    "/api/stream": {},
+    "/api/series/[id]/token": {},
+    "/series/[id]/episode": {},
     "/series/[id]": {},
     "/series": {},
-    "/": {},
-    "/series/[id]/episode": {}
+    "/": {}
   }
 }

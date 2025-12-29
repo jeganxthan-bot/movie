@@ -112,13 +112,14 @@ export default function Hero({ shows }: HeroProps) {
 
                             {/* Buttons */}
                             <div className="flex items-center space-x-4 pt-4">
-                                <Link
-                                    href={`/series/${show._id}`}
-                                    className="flex items-center gap-2 px-8 py-3 bg-[#E50914] hover:bg-[#b00710] text-white rounded font-bold text-lg transition-colors"
-                                >
-                                    <Play fill="currentColor" size={20} />
-                                    WATCH
-                                </Link>
+                               <Link
+    href={`/series/${show._id}`}
+    className="flex items-center gap-2 px-8 py-3 bg-transparent border border-[#E50914] hover:bg-[#E50914] hover:text-white text-[#E50914] rounded font-bold text-lg transition-colors"
+>
+    <Play fill="currentColor" size={20} />
+    WATCH
+</Link>
+
                             </div>
                         </div>
                     </div>

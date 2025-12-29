@@ -22,6 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' blob: data: https:; font-src 'self' data: https:; connect-src 'self' https:; media-src 'self' https: blob:;"
+        />
+      </head>
       <body className={`${outfit.className} antialiased bg-[#0f0f0f] text-white`}>
         {/* load AdSense runtime after the page is interactive */}
         <StyledComponentsRegistry>
