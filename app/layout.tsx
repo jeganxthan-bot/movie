@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import StyledComponentsRegistry from "./components/StyledComponentsRegistry";
 import DevtoolsGuard from "./components/DevtoolGuard";
+import AdTag from "./components/AdTag";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -30,9 +31,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${outfit.className} antialiased bg-[#0f0f0f] text-white`}>
-        {/* load AdSense runtime after the page is interactive */}
         <StyledComponentsRegistry>
-          <DevtoolsGuard/>
+          <DevtoolsGuard />
+          <AdTag />
           {children}
         </StyledComponentsRegistry>
       </body>
