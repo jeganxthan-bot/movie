@@ -78,6 +78,7 @@ export default function ShowsPage() {
   const controllerRef = useRef<AbortController | null>(null);
   const suggestControllerRef = useRef<AbortController | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [category, setCategory] = useState<string>("all"); // "all", "series", "movie"
 
   const safeSetShows = (arr: Show[]) => setShows(arr);
 
@@ -122,7 +123,7 @@ export default function ShowsPage() {
 
 
   // Fetch shows (Movies Grid)
-  const fetchShows = async (query = "") => {
+  const fetchShows = async (query = "", cat = "all") => {
     const thisReqId = ++reqIdRef.current;
 
     if (controllerRef.current) controllerRef.current.abort();
@@ -136,9 +137,10 @@ export default function ShowsPage() {
       let res: Response;
       let data: any;
 
+      // Use ?search for regex search in grid, or /api/shows with ?category
       const searchUrl = query
-        ? `/api/series?show_title=${encodeURIComponent(query)}`
-        : "/api/shows";
+        ? `/api/series?search=${encodeURIComponent(query)}`
+        : `/api/shows${cat !== "all" ? `?category=${cat}` : ""}`;
 
       res = await fetch(searchUrl, { signal });
       data = await res.json();
@@ -152,23 +154,12 @@ export default function ShowsPage() {
         return;
       }
 
-      // Handle different response structures if search returns single object or array
+      // Handle different response structures
       let results: Show[] = [];
       if (Array.isArray(data)) {
         results = data;
       } else if (Array.isArray(data.results)) {
         results = data.results;
-      } else if (data._id) {
-        // Single result from search
-        results = [{
-          _id: String(data._id),
-          show_title: data.show_title ?? "",
-          poster: data.poster ?? "",
-          series_logo: data.series_logo ?? "",
-          description: data.description ?? "",
-          seasons: data.seasons ?? "",
-          year: data.year ?? "",
-        }];
       }
 
       if (thisReqId === reqIdRef.current) {
@@ -189,7 +180,7 @@ export default function ShowsPage() {
   // Debounced search effect
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchShows(searchQuery);
+      fetchShows(searchQuery, category);
       if (searchQuery.length >= 2) {
         fetchSuggestions(searchQuery);
       } else {
@@ -198,7 +189,7 @@ export default function ShowsPage() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, category]);
 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -48,6 +48,7 @@ export default function Navbar({
                 <div className="hidden md:flex items-center gap-6 text-sm text-gray-300 font-medium">
                     <Link href="/" className="text-white font-bold hover:text-gray-200 transition">Home</Link>
                     <Link href="/series" className="hover:text-gray-200 transition">Series</Link>
+                    <Link href="/movies" className="hover:text-gray-200 transition">Movies</Link>
                 </div>
             </div>
 
@@ -68,12 +69,19 @@ export default function Navbar({
                     >
                         Series
                     </Link>
+                    <Link
+                        href="/movies"
+                        className="text-gray-300 font-medium text-lg hover:text-white"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Movies
+                    </Link>
                 </div>
             )}
 
             <div className="flex items-center gap-4 text-white">
                 {/* Search Input */}
-                <div className="relative group">
+                <form onSubmit={(e) => e.preventDefault()} className="relative group">
                     <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-white transition-colors" />
                     <input
                         type="text"
@@ -106,7 +114,7 @@ export default function Navbar({
                             ))}
                         </div>
                     )}
-                </div>
+                </form>
             </div>
         </nav>
     );

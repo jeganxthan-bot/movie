@@ -31,6 +31,7 @@ type Show = {
   poster?: string;
   data?: SeasonData;
   season?: number;
+  category?: string;
 };
 
 export default function EpisodePlayerPage() {
@@ -282,7 +283,9 @@ export default function EpisodePlayerPage() {
           <div className="bg-black/50 p-2 rounded-full border border-gray-600 group-hover:border-white transition-colors">
             <MoveLeft size={24} />
           </div>
-          <span className="font-bold text-lg drop-shadow-md">Back to Series</span>
+          <span className="font-bold text-lg drop-shadow-md">
+            {show?.category === "movie" ? "Back to Movie" : "Back to Series"}
+          </span>
         </button>
       </div>
 
@@ -336,7 +339,7 @@ export default function EpisodePlayerPage() {
         <section className="space-y-6">
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Play className="text-red-600 fill-red-600" />
-            Episodes
+            {show?.category === "movie" ? "Movie Content" : "Episodes"}
           </h2>
           {Object.entries(show?.data ?? {}).map(([seasonName, eps]) => (
             <div key={seasonName} className="space-y-4">
@@ -388,7 +391,7 @@ export default function EpisodePlayerPage() {
                         <div className="p-4 bg-[#181818] h-full">
                           <div className="flex justify-between items-start mb-1">
                             <h4 className={`font-bold text-base line-clamp-1 ${isActive ? "text-red-500" : "text-white"}`}>
-                              {idx + 1}. {ep.title}
+                              {show?.category === "movie" && eps.length === 1 ? ep.title : `${idx + 1}. ${ep.title}`}
                             </h4>
                             <span className="text-xs text-gray-500 font-mono">
                               {ep.idx !== undefined ? `${ep.idx + 1}m` : "45m"}

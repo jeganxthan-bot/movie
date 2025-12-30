@@ -21,8 +21,28 @@ export async function GET(
         }
 
         const db = await getDatabase();
-        const col = db.collection("series_data");
-        const show = await col.findOne({ _id: new ObjectId(id) });
+        let show = await db.collection("series_data").findOne({ _id: new ObjectId(id) });
+
+        if (!show) {
+            const movie = await db.collection("movie_data").findOne({ _id: new ObjectId(id) });
+            if (movie) {
+                // Construct pseudo-series structure for movies
+                show = {
+                    ...movie,
+                    seasons_data: [
+                        {
+                            "Movie": [
+                                {
+                                    title: movie.title,
+                                    url: movie.url,
+                                    description: movie.description
+                                }
+                            ]
+                        }
+                    ]
+                };
+            }
+        }
 
         if (!show) {
             return NextResponse.json({ error: "Show not found" }, { status: 404 });

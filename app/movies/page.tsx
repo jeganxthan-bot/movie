@@ -23,7 +23,7 @@ interface Show {
 
 const SHOWS_PER_PAGE = 24;
 
-export default function SeriesPage() {
+export default function MoviesPage() {
     const router = useRouter();
     const [shows, setShows] = useState<Show[]>([]);
     const [loading, setLoading] = useState(false);
@@ -37,7 +37,6 @@ export default function SeriesPage() {
     const suggestControllerRef = useRef<AbortController | null>(null);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [category, setCategory] = useState<string>("all"); // "all", "anime", "series"
     const safeSetShows = (arr: Show[]) => setShows(arr);
 
     // Fetch Suggestions
@@ -61,7 +60,7 @@ export default function SeriesPage() {
         }
     };
 
-    const fetchShows = async (query = "", cat = "all") => {
+    const fetchShows = async (query = "") => {
         const thisReqId = ++reqIdRef.current;
         if (controllerRef.current) controllerRef.current.abort();
         controllerRef.current = new AbortController();
@@ -74,7 +73,7 @@ export default function SeriesPage() {
             let data: any;
             const searchUrl = query
                 ? `/api/series?search=${encodeURIComponent(query)}`
-                : `/api/shows?category=${cat}`;
+                : "/api/shows?category=movie";
 
             res = await fetch(searchUrl, { signal });
             data = await res.json();
@@ -110,7 +109,7 @@ export default function SeriesPage() {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            fetchShows(searchQuery, category);
+            fetchShows(searchQuery);
             if (searchQuery.length >= 2) {
                 fetchSuggestions(searchQuery);
             } else {
@@ -119,7 +118,7 @@ export default function SeriesPage() {
         }, 300);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchQuery, category]);
+    }, [searchQuery]);
 
     const handleSuggestionClick = (s: NavbarShow) => {
         setSuggestions([]);
@@ -160,27 +159,7 @@ export default function SeriesPage() {
             />
 
             <div className="pt-24 px-4 md:px-8 pb-20 max-w-[1800px] mx-auto">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
-                    <h1 className="text-3xl font-bold text-white border-l-4 border-red-600 pl-4 capitalize">
-                        {category === "all" ? "Explore Content" : category}
-                    </h1>
-
-                    {/* Filters */}
-                    <div className="flex items-center gap-2 bg-zinc-900/50 p-1 rounded-lg border border-white/5">
-                        {["all", "anime", "series"].map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => {
-                                    setCategory(cat);
-                                    setCurrentPage(1);
-                                }}
-                                className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${category === cat ? "bg-red-600 text-white shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
-                            >
-                                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <h1 className="text-3xl font-bold mb-8 text-white border-l-4 border-red-600 pl-4">All Movies</h1>
 
                 {loading && shows.length === 0 ? (
                     <div className="flex justify-center py-20"><Loader /></div>
@@ -213,7 +192,7 @@ export default function SeriesPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center text-gray-500 py-20">No series found.</div>
+                    <div className="text-center text-gray-500 py-20">No movies found.</div>
                 )}
 
                 {/* Pagination */}

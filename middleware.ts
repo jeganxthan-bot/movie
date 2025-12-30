@@ -23,8 +23,12 @@ export function middleware(request: NextRequest) {
   }
 
   const ip = request.headers.get('x-forwarded-for') || 'ip';
-  const limit = 20; // 20 requests
+  const limit = 100; // 100 requests
   const windowMs = 60 * 1000; // per 1 minute
+
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next();
+  }
 
   if (!rateLimitMap.has(ip)) {
       rateLimitMap.set(ip, {

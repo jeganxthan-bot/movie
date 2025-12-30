@@ -10,20 +10,12 @@ export default function AdTag() {
         id="aclib"
         src="//acscdn.com/script/aclib.js"
         strategy="afterInteractive"
-      />
-
-      {/* Run the inline code safely */}
-      <Script
-        id="aclib-autotag"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            if (window.aclib) {
-              window.aclib.runAutoTag({
-                zoneId: 'ty8tfjuxfj',
-              });
-            }
-          `,
+        onLoad={() => {
+          if ((window as any).aclib && typeof (window as any).aclib.runAutoTag === 'function') {
+            (window as any).aclib.runAutoTag({
+              zoneId: 'ty8tfjuxfj',
+            });
+          }
         }}
       />
     </>

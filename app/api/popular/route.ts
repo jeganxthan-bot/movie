@@ -37,24 +37,52 @@ export async function GET() {
       .find({ show_title: { $in: titles } })
       .toArray();
 
-    // 3️⃣ map to DTO
-    const response: SeriesDTO[] = seriesDocs.map((show) => ({
-      _id: show._id.toString(),
-      show_title: show.show_title ?? "",
-      year: show.year ?? null,
-      rating: show.rating ?? null,
-      seasons: show.seasons ?? null,
-      description: show.description ?? "",
+    // 3️⃣ fetch movie data
+    const movieDocs = await db
+      .collection("movie_data")
+      .find({ title: { $in: titles } })
+      .toArray();
 
-      series_logo: show.series_logo ?? "",
-      poster: show.poster ?? "",
-      fanart: show.fanart ?? show.background ?? "",
+    // 4️⃣ combine and map to DTO
+    let response: SeriesDTO[] = [
+      ...seriesDocs.map((show) => ({
+        _id: show._id.toString(),
+        show_title: show.show_title ?? "",
+        year: show.year ?? null,
+        rating: show.rating ?? null,
+        seasons: show.seasons ?? null,
+        description: show.description ?? "",
+        series_logo: show.series_logo ?? "",
+        poster: show.poster ?? "",
+        fanart: show.fanart ?? show.background ?? "",
+        creators: toArray(show.creators),
+        cast: toArray(show.cast),
+        starring: toArray(show.starring),
+        show_characteristics: toArray(show.show_characteristics),
+      })),
+      ...movieDocs.map((movie) => ({
+        _id: movie._id.toString(),
+        show_title: movie.title ?? "",
+        year: movie.year ?? null,
+        rating: movie.rating ?? null,
+        seasons: "Movie", 
+        description: movie.description ?? "",
+        series_logo: movie.series_logo ?? "",
+        poster: movie.poster ?? "",
+        fanart: movie.fanart ?? movie.background ?? "",
+        creators: toArray(movie.creators),
+        cast: toArray(movie.cast),
+        starring: toArray(movie.starring),
+        show_characteristics: toArray(movie.show_characteristics),
+      }))
+    ];
 
-      creators: toArray(show.creators),
-      cast: toArray(show.cast),
-      starring: toArray(show.starring),
-      show_characteristics: toArray(show.show_characteristics),
-    }));
+    // Preserve order from popular_titles
+    response.sort((a, b) => {
+      const idxA = titles.indexOf(a.show_title);
+      const idxB = titles.indexOf(b.show_title);
+      return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+    });
 
     return NextResponse.json(response, { 
       status: 200,

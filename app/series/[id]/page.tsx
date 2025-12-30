@@ -24,6 +24,7 @@ interface SeasonData {
 interface Show {
   _id: string;
   show_title: string;
+  category?: string;
   year?: string;
   rating?: string;
   seasons_count?: number | string;
@@ -79,6 +80,7 @@ export default function SeriesPage() {
     return {
       _id: data._id,
       show_title: data.show_title,
+      category: data.category,
       year: data.year,
       rating: data.rating,
       description: data.description,
@@ -103,22 +105,22 @@ export default function SeriesPage() {
   };
 
   /* ================= FETCH ================= */
-useEffect(() => {
-  const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+  useEffect(() => {
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
 
-  if (!isDesktop) return;
+    if (!isDesktop) return;
 
-  const originalOverflow = document.body.style.overflow;
-  const originalOverscroll = document.body.style.overscrollBehavior;
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
 
-  document.body.style.overflow = "hidden";
-  document.body.style.overscrollBehavior = "none";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
 
-  return () => {
-    document.body.style.overflow = originalOverflow;
-    document.body.style.overscrollBehavior = originalOverscroll;
-  };
-}, []);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscroll;
+    };
+  }, []);
 
   const fetchShow = async (season = 1) => {
     setSeasonLoading(season);
@@ -221,8 +223,12 @@ useEffect(() => {
                 <span className="bg-[#f5c518] text-black text-[10px] font-bold px-1 rounded-sm">IMDb</span>
               </div>
             )}
-            {getSeasonsCount(show) > 0 && (
-              <span>{getSeasonsCount(show)} Seasons</span>
+            {show.category === "movie" ? (
+              <span>Movie</span>
+            ) : (
+              getSeasonsCount(show) > 0 && (
+                <span>{getSeasonsCount(show)} Seasons</span>
+              )
             )}
           </div>
 
@@ -300,7 +306,9 @@ useEffect(() => {
                   className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 appearance-none focus:outline-none focus:ring-2 focus:ring-white/20 transition-all cursor-pointer font-bold text-lg"
                 >
                   {Array.from({ length: getSeasonsCount(show) }).map((_, i) => (
-                    <option key={i + 1} value={i + 1} className="bg-[#1a1a1a]">Season {i + 1}</option>
+                    <option key={i + 1} value={i + 1} className="bg-[#1a1a1a]">
+                      {show.category === "movie" ? "Movie" : `Season ${i + 1}`}
+                    </option>
                   ))}
                 </select>
                 <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -356,7 +364,7 @@ useEffect(() => {
                         {/* Episode Info */}
                         <div className="flex-1 py-1">
                           <h4 className="font-bold text-sm md:text-base mb-1 line-clamp-2 leading-snug group-hover:text-white transition-colors">
-                            {idx + 1}. {ep.title}
+                            {show.category === "movie" && getSeasonsCount(show) === 1 ? "" : `${idx + 1}. `}{ep.title}
                           </h4>
                           <p className="text-gray-500 text-xs line-clamp-2 md:line-clamp-3 leading-relaxed">
                             {ep.description || "No description available for this episode."}

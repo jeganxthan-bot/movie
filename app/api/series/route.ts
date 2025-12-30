@@ -41,34 +41,101 @@ export async function GET(request: Request) {
     if (searchParam) {
       const regex = new RegExp(escapeRegex(searchParam), "i");
 
-      const docs = await col
+      const seriesDocs = await db.collection("series_data")
         .find({ show_title: { $regex: regex } })
-        .project({ show_title: 1, poster: 1, series_logo: 1 })
-        .limit(100)
+        .limit(50)
         .toArray();
+
+      const movieDocs = await db.collection("movie_data")
+        .find({ title: { $regex: regex } })
+        .limit(50)
+        .toArray();
+
+      const combinedResults = [
+        ...seriesDocs.map(d => ({
+          _id: d._id.toString(),
+          show_title: d.show_title ?? "",
+          poster: d.poster ?? "",
+          series_logo: d.series_logo ?? "",
+          year: d.year ?? "",
+          description: d.description ?? "",
+          seasons: d.seasons ?? "",
+        })),
+        ...movieDocs.map(d => ({
+          _id: d._id.toString(),
+          show_title: d.title ?? "",
+          poster: d.poster ?? "",
+          series_logo: d.series_logo ?? "",
+          year: d.year ?? "",
+          description: d.description ?? "",
+          seasons: "Movie",
+        }))
+      ];
+
+      // Sort by show_title
+      combinedResults.sort((a, b) => (a.show_title || "").localeCompare(b.show_title || ""));
 
       return NextResponse.json(
         {
-          results: docs.map((d) => ({
-            _id: d._id.toString(),
-            show_title: d.show_title ?? "",
-            poster: d.poster ?? "",
-            series_logo: d.series_logo ?? "",
-          })),
-          total: docs.length,
+          results: combinedResults,
+          total: combinedResults.length,
         },
         { status: 200 }
       );
     }
 
     /* -------------------------
-       2) FULL SHOW
+       2) FULL SHOW / MOVIE
     -------------------------- */
     if (!showTitleParam) {
       return NextResponse.json(
         { error: "show_title query param required" },
         { status: 400 }
       );
+    }
+
+    let show = await db.collection("series_data").findOne({ show_title: showTitleParam });
+    let isMovie = false;
+
+    if (!show) {
+      show = await db.collection("movie_data").findOne({ title: showTitleParam });
+      if (show) isMovie = true;
+    }
+
+    if (!show) {
+      return NextResponse.json({ error: "Show or Movie not found" }, { status: 404 });
+    }
+
+    if (isMovie) {
+      const payload = {
+        _id: show._id.toString(),
+        show_title: show.title ?? "",
+        year: show.year ?? null,
+        rating: show.rating ?? null,
+        description: show.description ?? "",
+        series_logo: show.series_logo ?? "",
+        poster: show.poster ?? "",
+        fanart: show.fanart ?? show.background ?? "",
+        seasons_count: 1,
+        creators: toArray(show.creators),
+        cast: toArray(show.cast),
+        starring: toArray(show.starring),
+        show_characteristics: toArray(show.show_characteristics),
+        audio: toArray(show.audio),
+        subtitles: toArray(show.subtitles),
+        season: 1,
+        data: {
+          "Movie": [
+            {
+              title: show.title ?? "",
+              description: show.description ?? "",
+              image_url: show.poster ?? "",
+              url: show.url ?? null,
+            }
+          ]
+        },
+      };
+      return NextResponse.json(payload, { status: 200 });
     }
 
     let seasonIndex = 0;
@@ -83,11 +150,6 @@ export async function GET(request: Request) {
       seasonIndex = n - 1;
     }
     const seasonNumber = seasonIndex + 1;
-
-    const show = await col.findOne({ show_title: showTitleParam });
-    if (!show) {
-      return NextResponse.json({ error: "Show not found" }, { status: 404 });
-    }
 
     const seasonsArray = Array.isArray(show.seasons_data)
       ? show.seasons_data

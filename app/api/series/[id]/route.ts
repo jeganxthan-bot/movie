@@ -39,11 +39,61 @@ export async function GET(
 
     // Query MongoDB
     const db = await getDatabase();
-    const col = db.collection("series_data");
+    let show = await db.collection("series_data").findOne({ _id: new ObjectId(id) });
+    let isMovie = false;
 
-    const show = await col.findOne({ _id: new ObjectId(id) });
     if (!show) {
-      return NextResponse.json({ error: "Show not found" }, { status: 404 });
+      show = await db.collection("movie_data").findOne({ _id: new ObjectId(id) });
+      if (show) isMovie = true;
+    }
+
+    if (!show) {
+      return NextResponse.json({ error: "Show or Movie not found" }, { status: 404 });
+    }
+
+    if (isMovie) {
+      let encryptedUrl: string | null = null;
+      try {
+        if (show.url) {
+          const expire = Date.now() + 120 * 1000;
+          encryptedUrl = await encryptToken({ url: show.url, expire });
+        }
+      } catch (err) {
+        console.error("Encryption failed:", err);
+      }
+
+      const payload = {
+        _id: show._id.toString(),
+        show_title: show.title ?? "",
+        category: "movie",
+        year: show.year ?? "",
+        rating: show.rating ?? "",
+        seasons_count: 1,
+        description: show.description ?? "",
+        series_logo: show.series_logo ?? "",
+        trailer_url: show.trailer_url ?? "",
+        poster: show.poster ?? "",
+        creators: show.creators ? (Array.isArray(show.creators) ? show.creators : show.creators.split(",").map((s: string) => s.trim())) : [],
+        cast: show.cast ? (Array.isArray(show.cast) ? show.cast : show.cast.split(",").map((s: string) => s.trim())) : [],
+        starring: show.starring ? (Array.isArray(show.starring) ? show.starring : show.starring.split(",").map((s: string) => s.trim())) : [],
+        show_characteristics: show.show_characteristics ? (Array.isArray(show.show_characteristics) ? show.show_characteristics : show.show_characteristics.split(",").map((s: string) => s.trim())) : [],
+        audio: show.audio ? (Array.isArray(show.audio) ? show.audio : show.audio.split(",").map((s: string) => s.trim())) : [],
+        subtitles: show.subtitles ? (Array.isArray(show.subtitles) ? show.subtitles : show.subtitles.split(",").map((s: string) => s.trim())) : [],
+        fanart: show.fanart ?? show.background ?? "",
+        background: show.background ?? show.fanart ?? "",
+        season: 1,
+        data: {
+          "Movie": [
+            {
+              title: show.title ?? "",
+              description: show.description ?? "",
+              image_url: show.poster ?? "",
+              url: encryptedUrl,
+            }
+          ]
+        },
+      };
+      return NextResponse.json(payload, { status: 200 });
     }
 
     const seasonsArray = Array.isArray(show.seasons_data)
@@ -94,6 +144,7 @@ export async function GET(
     const payload = {
       _id: show._id.toString(),
       show_title: show.show_title ?? "",
+      category: "series",
       year: show.year ?? "",
       rating: show.rating ?? "",
       seasons_count: show.seasons_count ?? seasonsArray.length,

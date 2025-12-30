@@ -8,6 +8,8 @@ const nextConfig = {
       { protocol: "https", hostname: "img10.hotstar.com" },
       { protocol: "https", hostname: "static.wikia.nocookie.net" },
       { protocol: "https", hostname: "images.metahub.space" },
+      { protocol: "https", hostname: "episodes.metahub.space" },
+      { protocol: "https", hostname: "live.metahub.space" },
     ],
   },
   compiler: {
