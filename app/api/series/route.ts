@@ -11,6 +11,16 @@ function escapeRegex(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function getFlexibleRegex(input: string) {
+  const cleaned = input.replace(/[^a-zA-Z0-9]/g, "");
+  if (!cleaned) return new RegExp(escapeRegex(input), "i");
+  const pattern = cleaned
+    .split("")
+    .map((c) => escapeRegex(c))
+    .join("[^a-zA-Z0-9]*");
+  return new RegExp(pattern, "i");
+}
+
 function toArray(value: any): string[] {
   if (Array.isArray(value)) return value;
   if (typeof value === "string") {
@@ -39,7 +49,7 @@ export async function GET(request: Request) {
        1) SEARCH
     -------------------------- */
     if (searchParam) {
-      const regex = new RegExp(escapeRegex(searchParam), "i");
+      const regex = getFlexibleRegex(searchParam);
 
       const seriesDocs = await db.collection("series_data")
         .find({ show_title: { $regex: regex } })

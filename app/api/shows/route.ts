@@ -58,8 +58,9 @@ export async function GET(request: Request) {
 
     // Filter logic
     const fetchAll = !category || category === "all";
-    const fetchAnime = category === "anime" || fetchAll;
-    const fetchSeriesOnly = category === "series" || fetchAll;
+    const fetchSeriesAll = category === "series_all";
+    const fetchAnime = category === "anime" || fetchAll || fetchSeriesAll;
+    const fetchSeriesOnly = category === "series" || fetchAll || fetchSeriesAll;
     const fetchMovie = category === "movie" || fetchAll;
 
     // Fetch from series_data (Anime and Series)

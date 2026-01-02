@@ -31,6 +31,7 @@ export default function MoviesPage() {
 
     // suggestions state
     const [suggestions, setSuggestions] = useState<NavbarShow[]>([]);
+    const [suggestLoading, setSuggestLoading] = useState(false);
 
     const reqIdRef = useRef(0);
     const controllerRef = useRef<AbortController | null>(null);
@@ -45,6 +46,7 @@ export default function MoviesPage() {
         suggestControllerRef.current = new AbortController();
         const signal = suggestControllerRef.current.signal;
 
+        setSuggestLoading(true);
         try {
             const res = await fetch(`/api/series?search=${encodeURIComponent(q)}`, { signal });
             const data = await res.json();
@@ -57,6 +59,8 @@ export default function MoviesPage() {
         } catch (err: any) {
             if (err?.name === "AbortError") return;
             setSuggestions([]);
+        } finally {
+            setSuggestLoading(false);
         }
     };
 
@@ -156,6 +160,7 @@ export default function MoviesPage() {
                 suggestions={suggestions}
                 handleSuggestionClick={handleSuggestionClick}
                 transparent={false}
+                isLoading={suggestLoading}
             />
 
             <div className="pt-24 px-4 md:px-8 pb-20 max-w-[1800px] mx-auto">

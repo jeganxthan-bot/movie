@@ -242,12 +242,13 @@ export default function ShowsPage() {
         suggestions={suggestions}
         handleSuggestionClick={handleSuggestionClick}
         transparent={true}
+        isLoading={suggestLoading}
       />
 
       {/* Hero Section */}
       {seriesList.length > 0 && <Hero shows={seriesList as unknown as Show[]} />}
 
-      <div className="relative z-20 pb-20 space-y-8 bg-gradient-to-b from-transparent via-[#0f0f0f] to-[#0f0f0f] -mt-32 pt-32">
+      <div className="relative z-20 pb-10 space-y-8 bg-gradient-to-b from-transparent via-[#0f0f0f] to-[#0f0f0f] -mt-32 pt-32">
 
         {/* Popular Series Slider */}
         <div className="px-0">
@@ -325,7 +326,7 @@ export default function ShowsPage() {
 
           {/* Pagination controls */}
           {shows.length > 0 && (
-            <div className="mt-12 flex items-center justify-center gap-6 pb-10">
+            <div className="mt-8 flex items-center justify-center gap-6 pb-4">
               <PrevPage onClick={goPrev} disabled={currentPage === 1} />
               <div className="text-gray-400 text-sm font-medium">
                 <span className="text-white">{currentPage}</span> / {totalPages}

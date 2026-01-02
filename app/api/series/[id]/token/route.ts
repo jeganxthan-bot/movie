@@ -21,10 +21,13 @@ export async function GET(
         }
 
         const db = await getDatabase();
+        console.log(`[TokenAPI] Searching for ID: ${id}`);
         let show = await db.collection("series_data").findOne({ _id: new ObjectId(id) });
+        console.log(`[TokenAPI] Series search result: ${show ? "Found" : "Not Found"}`);
 
         if (!show) {
             const movie = await db.collection("movie_data").findOne({ _id: new ObjectId(id) });
+            console.log(`[TokenAPI] Movie search result: ${movie ? "Found" : "Not Found"}`);
             if (movie) {
                 // Construct pseudo-series structure for movies
                 show = {

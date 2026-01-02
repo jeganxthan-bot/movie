@@ -88,6 +88,7 @@ export async function GET(
               title: show.title ?? "",
               description: show.description ?? "",
               image_url: show.poster ?? "",
+              duration: show.duration ?? show.runtime ?? "",
               url: encryptedUrl,
             }
           ]
@@ -136,6 +137,7 @@ export async function GET(
           title,
           description,
           image_url,
+          duration: ep?.duration ?? ep?.runtime ?? "",
           url: encryptedUrl,
         };
       }));

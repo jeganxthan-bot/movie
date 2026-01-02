@@ -31,6 +31,7 @@ export default function SeriesPage() {
 
     // suggestions state
     const [suggestions, setSuggestions] = useState<NavbarShow[]>([]);
+    const [suggestLoading, setSuggestLoading] = useState(false);
 
     const reqIdRef = useRef(0);
     const controllerRef = useRef<AbortController | null>(null);
@@ -46,6 +47,7 @@ export default function SeriesPage() {
         suggestControllerRef.current = new AbortController();
         const signal = suggestControllerRef.current.signal;
 
+        setSuggestLoading(true);
         try {
             const res = await fetch(`/api/series?search=${encodeURIComponent(q)}`, { signal });
             const data = await res.json();
@@ -58,6 +60,8 @@ export default function SeriesPage() {
         } catch (err: any) {
             if (err?.name === "AbortError") return;
             setSuggestions([]);
+        } finally {
+            setSuggestLoading(false);
         }
     };
 
@@ -74,7 +78,7 @@ export default function SeriesPage() {
             let data: any;
             const searchUrl = query
                 ? `/api/series?search=${encodeURIComponent(query)}`
-                : `/api/shows?category=${cat}`;
+                : `/api/shows?category=${cat === "all" ? "series_all" : cat}`;
 
             res = await fetch(searchUrl, { signal });
             data = await res.json();
@@ -157,6 +161,7 @@ export default function SeriesPage() {
                 suggestions={suggestions}
                 handleSuggestionClick={handleSuggestionClick}
                 transparent={false}
+                isLoading={suggestLoading}
             />
 
             <div className="pt-24 px-4 md:px-8 pb-20 max-w-[1800px] mx-auto">

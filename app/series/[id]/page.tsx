@@ -14,6 +14,7 @@ interface Episode {
   title: string;
   description: string;
   image_url: string;
+  duration?: string;
   url: string | null;
 }
 
@@ -356,9 +357,11 @@ export default function SeriesPage() {
                             <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">No Image</div>
                           )}
                           <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">
-                            EP {idx + 1}
-                          </div>
+                          {(ep.duration || show.category !== "movie") && (
+                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-[10px] font-bold">
+                              {ep.duration || `EP ${idx + 1}`}
+                            </div>
+                          )}
                         </div>
 
                         {/* Episode Info */}

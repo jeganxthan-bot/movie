@@ -26,7 +26,6 @@ export async function GET() {
     const popular = await db
       .collection("popular_titles")
       .find({})
-      .limit(5)
       .toArray();
 
     const titles = popular.map((p) => p.title);

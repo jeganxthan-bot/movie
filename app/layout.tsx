@@ -32,8 +32,8 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.className} antialiased bg-[#0f0f0f] text-white`}>
         <StyledComponentsRegistry>
-          <DevtoolsGuard />
           <AdTag />
+          {/* <DevtoolsGuard/> */}
           {children}
         </StyledComponentsRegistry>
       </body>
